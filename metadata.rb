@@ -5,5 +5,6 @@ maintainer_email 'allan.espinosa@outlook.com'
 
 version '0.1.0'
 
-depends 'apt'
-depends 'docker'
+depends 'apt', '~> 3.0.0'
+depends 'docker', '~> 2.5.8'
+depends 'systemd', '~> 0.2.0'

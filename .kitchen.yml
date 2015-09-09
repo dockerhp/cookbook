@@ -12,3 +12,6 @@ suites:
   - name: base
     run_list:
       - recipe[dockerhp::base]
+  - name: monitoring
+    run_list:
+      - recipe[dockerhp::monitoring]
