@@ -8,6 +8,14 @@ Infrastructure to support a Docker-based deployment
 
 Supplementary material for the book [*Docker High Performance*](http://amzn.com/1785886800).
 
+# Recipes
+
+## dockerhp::base
+
+The base recipe to setup a basic configuration of Docker. Adding this to the
+run_list of a node does the following:
+
+* docker daemon
 # License
 
 Copyright 2016 Allan Espinosa
