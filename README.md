@@ -16,6 +16,10 @@ The base recipe to setup a basic configuration of Docker. Adding this to the
 run_list of a node does the following:
 
 * docker daemon
+* docker daemon to log to Debian Jessie's journal
+* forward all rsyslog entries to a remote syslog.  It will forward to a Chef
+  Node with an attribute `node['is_logstash'] = true`.
+
 # License
 
 Copyright 2016 Allan Espinosa

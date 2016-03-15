@@ -14,3 +14,13 @@ docker_service 'default' do
   install_method 'package'
   log_driver 'journald'
 end
+
+service 'rsyslog'
+
+logstash_machine = search(:node, 'is_logstash:true').first
+
+template '/etc/rsyslog.d/10-forward.conf' do
+  source 'forward-syslog.conf.erb'
+  variables syslog_endpoint: logstash_machine['fqdn']
+  notifies :restart, 'service[rsyslog]'
+end

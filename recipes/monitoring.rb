@@ -75,4 +75,12 @@ end
 
 service 'logstash' do
   action [:enable, :start]
+  notifies :run, 'ruby_block[set logstash toggle]'
+end
+
+ruby_block 'set logstash toggle' do
+  block do
+    node.set['is_logstash'] = true
+  end
+  action :nothing
 end
