@@ -19,6 +19,8 @@ run_list of a node does the following:
 * docker daemon to log to Debian Jessie's journal
 * forward all rsyslog entries to a remote syslog.  It will forward to a Chef
   Node with an attribute `node['is_logstash'] = true`.
+* collectd with basic and container metric collection. It will send Graphite
+  metrics to a Chef Node with an attribute `node[is_graphite] = true`.
 
 # License
 

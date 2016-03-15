@@ -24,3 +24,27 @@ template '/etc/rsyslog.d/10-forward.conf' do
   variables syslog_endpoint: logstash_machine['fqdn']
   notifies :restart, 'service[rsyslog]'
 end
+
+package 'collectd-core' # FIXME just make this a dependency
+
+apt_repository 'allan_vendor' do
+  uri 'https://packagecloud.io/allan/vendor/debian'
+  components %w(jessie main)
+  key 'https://packagecloud.io/gpg.key'
+  cache_rebuild true
+end
+
+package 'libpython2.7'
+package 'docker-collectd-plugin' # FIXME just make this a dependency
+
+service 'collectd' do
+  action [:enable, :start]
+end
+
+graphite_machine = search(:node, 'is_graphite:true').first
+
+template '/etc/collectd/collectd.conf' do
+  source 'collectd.conf.erb'
+  variables graphite_endpoint: graphite_machine['fqdn']
+  notifies :restart, 'service[collectd]'
+end

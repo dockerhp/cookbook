@@ -1,0 +1,10 @@
+{
+  "name": "fake_graphite",
+  "normal": {
+    "is_graphite": true
+  },
+  "automatic": {
+    "fqdn": "fake-graphite.dev",
+    "ipaddress": "127.0.0.1"
+  }
+}
