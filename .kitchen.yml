@@ -15,3 +15,6 @@ suites:
   - name: monitoring
     run_list:
       - recipe[dockerhp::monitoring]
+  - name: jenkins
+    run_list:
+      - recipe[dockerhp::jenkins]
