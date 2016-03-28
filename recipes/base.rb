@@ -15,6 +15,12 @@ docker_service 'default' do
   log_driver 'journald'
 end
 
+# Doesn't do anything. But useful for placing this recipe in a test hardness
+# using proxy repositories. Makes the tests much much faster
+docker_registry 'wrap' do
+  action :nothing
+end
+
 service 'rsyslog'
 
 logstash_machine = search(:node, 'is_logstash:true').first
