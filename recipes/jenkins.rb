@@ -78,7 +78,7 @@ jenkins_script 'setup plugins' do
       }
     }
 
-    ["git", "workflow-aggregator", "github-oauth", "job-dsl"].each {
+    ["git", "workflow-aggregator", "github-oauth", "job-dsl", "extended-read-permission"].each {
       if (! pm.getPlugin(it)) {
         deployment = uc.getPlugin(it).deploy(true)
         deployment.get()
