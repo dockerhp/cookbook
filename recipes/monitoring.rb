@@ -52,7 +52,7 @@ docker_image 'aespinosa/logstash'
 docker_container 'logstash' do
   command '-f /etc/logstash.conf'
   extra_hosts ["elasticsearch:#{node[:ipaddress]}"]
-  repo aespinosa/logstash'
+  repo 'aespinosa/logstash'
   port '514:1514/udp'
   action :create
 end
