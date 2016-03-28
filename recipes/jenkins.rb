@@ -34,7 +34,10 @@ ruby_block 'load jenkins credential' do
   end
 end
 
-jenkins_user 'chef'
+jenkins_user 'chef' do
+  id "chef@#{Chef::Config[:node_name]}"
+  full_name "Chef"
+end
 
 # FIXME Make this more idempotent
 jenkins_script 'update plugins' do
@@ -97,7 +100,7 @@ jenkins_script 'secure jenkins' do
     permissions = new hudson.security.GlobalMatrixAuthorizationStrategy()
 
     permissions.add(Jenkins.ADMINISTER, 'aespinosa')
-    permissions.add(Jenkins.ADMINISTER, 'chef')
+    permissions.add(Jenkins.ADMINISTER, '#{resources('jenkins_user[chef]').id}')
     permissions.add(hudson.model.View.READ, 'anonymous')
     permissions.add(hudson.model.Item.READ, 'anonymous')
     permissions.add(Jenkins.READ, 'anonymous')
