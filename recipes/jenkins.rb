@@ -20,16 +20,34 @@ group 'docker' do
   notifies :restart, 'service[jenkins]'
 end
 
+# FIXME Make this more idempotent
+jenkins_script 'update plugins' do
+  command <<-eos.gsub(/^\s+/, '')
+    import jenkins.model.Jenkins;
+
+    pm = Jenkins.instance.pluginManager
+    pm.doCheckUpdatesServer()
+
+    uc = Jenkins.instance.updateCenter
+    pm.plugins.each { plugin ->
+      update = uc.getPlugin(plugin.shortName).deploy(true)
+      update.get()
+    }
+    Jenkins.instance.restart()
+  eos
+end
+
+# FIXME Make this more idempotent
 jenkins_script 'setup plugins' do
   command <<-eos.gsub(/^\s+/, '')
     import jenkins.model.Jenkins;
 
     pm = Jenkins.instance.pluginManager
 
-    pm.plugins.each { it.disable() }
-
-    pm.doCheckUpdatesServer()
     uc = Jenkins.instance.updateCenter
+    pm.plugins.each { plugin ->
+      plugin.disable()
+    }
 
     def activatePlugin(plugin) {
       if (! plugin.isEnabled()) {
@@ -48,5 +66,6 @@ jenkins_script 'setup plugins' do
       }
       activatePlugin(pm.getPlugin(it))
     }
+    Jenkins.instance.restart()
   eos
 end
