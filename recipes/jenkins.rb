@@ -20,6 +20,22 @@ group 'docker' do
   notifies :restart, 'service[jenkins]'
 end
 
+ruby_block 'load jenkins credential' do
+  block do
+    require 'openssl'
+    require 'net/ssh'
+
+    key = ::OpenSSL::PKey::RSA.new ::File.read Chef::Config[:client_key]
+
+    node.run_state[:jenkins_private_key] = key.to_pem
+
+    jenkins = resources('jenkins_user[chef]')
+    jenkins.public_keys ["#{key.ssh_type} #{[key.to_blob].pack('m0')}"]
+  end
+end
+
+jenkins_user 'chef'
+
 # FIXME Make this more idempotent
 jenkins_script 'update plugins' do
   command <<-eos.gsub(/^\s+/, '')
@@ -59,7 +75,7 @@ jenkins_script 'setup plugins' do
       }
     }
 
-    ["git", "workflow-aggregator"].each {
+    ["git", "workflow-aggregator", "github-oauth"].each {
       if (! pm.getPlugin(it)) {
         deployment = uc.getPlugin(it).deploy(true)
         deployment.get()
@@ -67,5 +83,27 @@ jenkins_script 'setup plugins' do
       activatePlugin(pm.getPlugin(it))
     }
     Jenkins.instance.restart()
+  eos
+end
+
+jenkins_script 'secure jenkins' do
+  command <<-eos.gsub(/^\s+/, '')
+    import jenkins.model.Jenkins;
+    import org.jenkinsci.plugins.GithubSecurityRealm;
+
+    Jenkins.instance.securityRealm = new GithubSecurityRealm(
+        'https://github.com', 'https://api.github.com', 'x', 'y')
+
+    permissions = new hudson.security.GlobalMatrixAuthorizationStrategy()
+
+    permissions.add(Jenkins.ADMINISTER, 'aespinosa')
+    permissions.add(Jenkins.ADMINISTER, 'chef')
+    permissions.add(hudson.model.View.READ, 'anonymous')
+    permissions.add(hudson.model.Item.READ, 'anonymous')
+    permissions.add(Jenkins.READ, 'anonymous')
+
+    Jenkins.instance.authorizationStrategy = permissions
+
+    Jenkins.instance.save()
   eos
 end
