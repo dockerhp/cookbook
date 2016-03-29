@@ -75,7 +75,7 @@ jenkins_script 'setup plugins' do
       }
     }
 
-    ["git", "workflow-aggregator", "github-oauth"].each {
+    ["git", "workflow-aggregator", "github-oauth", "job-dsl"].each {
       if (! pm.getPlugin(it)) {
         deployment = uc.getPlugin(it).deploy(true)
         deployment.get()
@@ -107,3 +107,48 @@ jenkins_script 'secure jenkins' do
     Jenkins.instance.save()
   eos
 end
+
+jenkins_script 'install seed-job' do
+  command <<-eos.gsub(/^\s+/, '')
+    import jenkins.model.Jenkins;
+    import hudson.model.FreeStyleProject;
+
+    job = Jenkins.instance.createProject(FreeStyleProject, 'seed-job')
+    job.displayName = 'Seed Job'
+
+    builder = new javaposse.jobdsl.plugin.ExecuteDslScripts(
+      new javaposse.jobdsl.plugin.ExecuteDslScripts.ScriptLocation(
+          'false',
+          'samples.groovy',
+          null),
+      false,
+      javaposse.jobdsl.plugin.RemovedJobAction.DELETE, 
+      javaposse.jobdsl.plugin.RemovedViewAction.DELETE, 
+      javaposse.jobdsl.plugin.LookupStrategy.JENKINS_ROOT, 
+    )
+    job.buildersList.add(builder)
+
+    job.save()
+  eos
+  not_if { ::File.exists? '/var/lib/jenkins/jobs/seed-job/config.xml' }
+end
+
+directory '/var/lib/jenkins/jobs/seed-job/workspace' do
+  owner 'jenkins'
+end
+
+cookbook_file '/var/lib/jenkins/jobs/seed-job/workspace/samples.groovy' do
+  source 'samples.groovy'
+  notifies :execute, 'jenkins_script[build seed-job]'
+end
+
+jenkins_script 'build seed-job' do
+  command <<-eos.gsub(/^\s+/, '')
+    import jenkins.model.Jenkins;
+    job = Jenkins.instance.getItem('seed-job')
+    job.scheduleBuild(new hudson.model.Cause.UserIdCause())
+  eos
+  action :nothing
+end
+
+package 'git-core'
