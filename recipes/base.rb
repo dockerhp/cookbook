@@ -12,6 +12,7 @@ end
 
 docker_service 'default' do
   install_method 'package'
+  package_version '1.10.3-0~jessie'
   log_driver 'journald'
 end
 
