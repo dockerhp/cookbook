@@ -39,24 +39,42 @@ jenkins_user 'chef' do
   full_name "Chef"
 end
 
-# FIXME Make this more idempotent
+
+jenkins_script 'get list of latest plugins' do
+  command <<-eos.gsub(/^\s+/, '')
+    pm = jenkins.model.instance.pluginManager
+    pm.doCheckUpdatesServer()
+  eos
+
+  not_if do
+    update_frequency = 86_400 # daily
+    update_file = '/var/lib/jenkins/updates/default.json'
+    ::File.exists?(update_file) &&
+      ::File.mtime(update_file) > Time.now - update_frequency
+  end
+end
+
 jenkins_script 'update plugins' do
   command <<-eos.gsub(/^\s+/, '')
     import jenkins.model.Jenkins;
 
     pm = Jenkins.instance.pluginManager
-    pm.doCheckUpdatesServer()
 
     uc = Jenkins.instance.updateCenter
+    updated = false
     pm.plugins.each { plugin ->
-      update = uc.getPlugin(plugin.shortName).deploy(true)
-      update.get()
+      if (uc.getPlugin(plugin.shortName).version != plugin.version) {
+        update = uc.getPlugin(plugin.shortName).deploy(true)
+        update.get()
+        updated = true
+      }
     }
-    Jenkins.instance.restart()
+    if (updated) {
+      Jenkins.instance.restart()
+    }
   eos
 end
 
-# FIXME Make this more idempotent
 jenkins_script 'setup plugins' do
   command <<-eos.gsub(/^\s+/, '')
     import jenkins.model.Jenkins;
@@ -68,9 +86,11 @@ jenkins_script 'setup plugins' do
       plugin.disable()
     }
 
+    deployed = false
     def activatePlugin(plugin) {
       if (! plugin.isEnabled()) {
         plugin.enable()
+        deployed = true
       }
 
       plugin.getDependencies().each {
@@ -85,7 +105,10 @@ jenkins_script 'setup plugins' do
       }
       activatePlugin(pm.getPlugin(it))
     }
-    Jenkins.instance.restart()
+
+    if (deployed) {
+      Jenkins.instance.restart()
+    }
   eos
 end
 
