@@ -18,7 +18,6 @@ suites:
   - name: jenkins
     run_list:
       - recipe[dockerhp::jenkins]
-
-verifier:
-  name: shell
-  command: open http://$KITCHEN_HOSTNAME:8080
+    verifier:
+      name: shell
+      command: open http://$KITCHEN_HOSTNAME:8080
