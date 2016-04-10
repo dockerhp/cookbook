@@ -28,8 +28,9 @@ logstash_machine = search(:node, 'is_logstash:true').first
 
 template '/etc/rsyslog.d/10-forward.conf' do
   source 'forward-syslog.conf.erb'
-  variables syslog_endpoint: logstash_machine['fqdn']
+  variables lazy { {syslog_endpoint: logstash_machine['fqdn']} }
   notifies :restart, 'service[rsyslog]'
+  not_if { logstash_machine.nil? }
 end
 
 package 'collectd-core' # FIXME just make this a dependency
@@ -52,6 +53,7 @@ graphite_machine = search(:node, 'is_graphite:true').first
 
 template '/etc/collectd/collectd.conf' do
   source 'collectd.conf.erb'
-  variables graphite_endpoint: graphite_machine['fqdn']
+  variables lazy { {graphite_endpoint: graphite_machine['fqdn']} }
   notifies :restart, 'service[collectd]'
+  not_if { graphite_machine.nil? }
 end
