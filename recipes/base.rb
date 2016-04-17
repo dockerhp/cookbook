@@ -11,9 +11,12 @@ apt_repository 'docker' do
   cache_rebuild true
 end
 
-docker_service 'default' do
-  install_method 'package'
-  package_version '1.11.0-0~jessie'
+docker_installation_package 'default' do
+  version '1.11.0'
+end
+
+docker_service_manager 'default' do
+  action %w(restart)
   log_driver 'journald'
 end
 
