@@ -4,7 +4,8 @@ include_recipe 'apt'
 
 apt_repository 'docker' do
   uri 'http://apt.dockerproject.org/repo'
-  components %w(debian-jessie main)
+  distribution 'debian-jessie'
+  components %w(main)
   keyserver 'p80.pool.sks-keyservers.net'
   key '58118E89F3A912897C070ADBF76221572C52609D'
   cache_rebuild true
@@ -37,7 +38,7 @@ package 'collectd-core' # FIXME just make this a dependency
 
 apt_repository 'allan_vendor' do
   uri 'https://packagecloud.io/allan/vendor/debian'
-  components %w(jessie main)
+  components %w(main)
   key 'https://packagecloud.io/gpg.key'
   cache_rebuild true
 end
