@@ -8,7 +8,7 @@ include_recipe 'apt'
 package 'openjdk-7-jre-headless'
 
 node.default['jenkins']['master']['install_method'] = 'package'
-node.default['jenkins']['master']['version'] = '1.642.4'
+node.default['jenkins']['master']['version'] = '1.651.1'
 include_recipe 'jenkins::master'
 
 repo = resources('apt_repository[jenkins]')
