@@ -3,7 +3,7 @@ provisioner:
   name: chef_zero
 
 platforms:
-  - name: debian-8.3
+  - name: debian-8.4
 
 suites:
   - name: base
