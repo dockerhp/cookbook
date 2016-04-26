@@ -42,7 +42,7 @@ end
 
 jenkins_script 'get list of latest plugins' do
   command <<-eos.gsub(/^\s+/, '')
-    pm = jenkins.model.instance.pluginManager
+    pm = jenkins.model.Jenkins.instance.pluginManager
     pm.doCheckUpdatesServer()
   eos
 
